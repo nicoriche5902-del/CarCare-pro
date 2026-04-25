@@ -1,15 +1,58 @@
-const CACHE_NAME="carcare-v3";
-const urls=["/","/index.html","/manifest.json"];
-self.addEventListener("install",e=>{
-e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(urls)));
-self.skipWaiting();
+const CACHE_NAME = "carcare-v3";
+
+const STATIC_CACHE = [
+  "/",
+  "/index.html",
+  "/manifest.json"
+];
+
+// INSTALL : cache initial
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(STATIC_CACHE);
+    })
+  );
+
+  self.skipWaiting();
 });
-self.addEventListener("activate",e=>{
-e.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE_NAME&&caches.delete(k)))));
-self.clients.claim();
+
+// ACTIVATE : nettoyage ancien cache
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+
+  self.clients.claim();
 });
-self.addEventListener("fetch",e=>{
-e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-return caches.open(CACHE_NAME).then(c=>{c.put(e.request,res.clone());return res;});
-}).catch(()=>caches.match("/index.html"))));
+
+// FETCH : STRATEGY "CACHE FIRST + FALLBACK"
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request)
+        .then(response => {
+          return caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+        .catch(() => {
+          // fallback offline simple
+          if (event.request.mode === "navigate") {
+            return caches.match("/index.html");
+          }
+        });
+    })
+  );
 });
