@@ -13,70 +13,107 @@
 body {
   margin:0;
   font-family:-apple-system;
-  background:linear-gradient(180deg,#0b1220,#020617);
+  background:linear-gradient(180deg,#020617,#020617 40%,#0b1220);
   color:white;
 }
 
+/* HEADER */
 .header {
   text-align:center;
   padding:20px;
-  font-size:20px;
-  font-weight:600;
-  background:rgba(17,24,39,0.8);
-  backdrop-filter:blur(10px);
+  font-size:22px;
+  font-weight:700;
 }
 
+/* CONTAINER */
 .container {padding:15px;}
 
-.car-card, .panel {
-  background:rgba(31,41,55,0.7);
-  backdrop-filter:blur(10px);
+/* CARD VEHICULE */
+.car-card {
+  background:linear-gradient(135deg,#1f2937,#111827);
   padding:18px;
-  border-radius:18px;
-  margin-bottom:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  border-radius:20px;
+  margin-bottom:14px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6);
 }
 
+.car-title {font-size:18px;font-weight:600;}
+.car-info {font-size:13px;color:#94a3b8;margin-top:4px;}
+
+/* PANEL */
+.panel {
+  background:rgba(17,24,39,0.8);
+  backdrop-filter:blur(15px);
+  padding:18px;
+  border-radius:20px;
+  margin-bottom:12px;
+}
+
+/* TABS */
 .tabs {
   display:flex;
-  background:#1f2937;
-  border-radius:14px;
-  overflow:hidden;
-  margin-bottom:10px;
+  background:#111827;
+  border-radius:16px;
+  padding:4px;
+  margin-bottom:12px;
+}
+.tab {
+  flex:1;
+  text-align:center;
+  padding:10px;
+  border-radius:12px;
+}
+.active {
+  background:linear-gradient(135deg,#22c55e,#4ade80);
+  color:black;
 }
 
-.tab {flex:1;text-align:center;padding:12px;}
-.active {background:#22c55e;color:black;}
-
+/* ITEM */
 .item {
-  background:rgba(31,41,55,0.8);
-  padding:12px;
-  border-radius:14px;
+  background:linear-gradient(135deg,#1f2937,#020617);
+  padding:14px;
+  border-radius:16px;
   margin-top:10px;
 }
 
+.item-title {font-weight:600;}
+.item-date {font-size:13px;color:#94a3b8;}
+
+.badge {
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:8px;
+  font-size:11px;
+  margin-top:5px;
+  background:#22c55e33;
+  color:#4ade80;
+}
+
+/* BUTTON */
 button {
   border:none;
-  padding:8px;
+  padding:7px 10px;
   border-radius:10px;
-  margin-top:5px;
+  margin-top:6px;
+  font-size:12px;
 }
-button:active {transform:scale(0.95);}
-
 .primary {background:#22c55e;}
 .danger {background:#ef4444;}
-.gray {background:#334155;}
+.gray {background:#1f2937;}
+button:active {transform:scale(0.95);}
 
+/* INPUT */
 input, select {
   width:100%;
   padding:10px;
   margin-top:8px;
-  border-radius:10px;
+  border-radius:12px;
   border:none;
   background:#020617;
   color:white;
 }
 
+/* FLOAT BUTTON */
 .fab {
   position:fixed;
   bottom:20px;
@@ -107,21 +144,15 @@ let showForm=false;
 
 function save(){localStorage.setItem("cars",JSON.stringify(cars));}
 
-/* 📅 ALERTES DATE */
+/* ALERTES DATE */
 function checkAlerts(car){
   const today = new Date();
-
   car.entretiens.forEach(e=>{
     if(e.type==="Révision" && e.date){
-      const d = new Date(e.date);
-      const diff = (d - today) / (1000*60*60*24);
-
-      if(diff < 0){
-        alert("⚠️ Révision en retard !");
-      }
-      else if(diff < 7){
-        alert("⏳ Révision dans moins de 7 jours");
-      }
+      const d=new Date(e.date);
+      const diff=(d-today)/(1000*60*60*24);
+      if(diff<0) alert("⚠️ Révision en retard !");
+      else if(diff<7) alert("⏳ Révision bientôt !");
     }
   });
 }
@@ -133,9 +164,8 @@ function home(){
   cars.forEach((c,i)=>{
     html+=`
     <div class="car-card" onclick="openCar(${i})">
-      <b>${c.marque} ${c.modele}</b><br>
-      ${c.plaque}<br>
-      ${c.km} km
+      <div class="car-title">${c.marque} ${c.modele}</div>
+      <div class="car-info">${c.plaque} • ${c.km} km</div>
     </div>`;
   });
   html+=`<div class="fab" onclick="addCar()">+</div>`;
@@ -187,17 +217,14 @@ function renderEntretien(){
     return `
     <div class="panel">
       <button class="gray" onclick="showForm=false;render()">⬅</button>
-
       <select id="type">
         <option>Révision</option>
         <option>Freins</option>
         <option>Distribution</option>
         <option>Réparation</option>
       </select>
-
       <input id="date" type="date">
       <input id="note" placeholder="Note">
-
       <button class="primary" onclick="addEntretien()">Ajouter</button>
     </div>`;
   }
@@ -207,10 +234,9 @@ function renderEntretien(){
     ${
       car.entretiens.map((e,i)=>`
       <div class="item">
-        <b>${e.type}</b><br>
-        📅 ${e.date || "Non définie"}<br>
-        ${e.note || ""}
-
+        <div class="item-title">${e.type}</div>
+        <div class="item-date">📅 ${e.date || "Non définie"}</div>
+        ${e.note||""}
         <br>
         <button class="primary" onclick="done(${i})">✔</button>
         <button class="gray" onclick="editE(${i})">Modifier</button>
@@ -232,9 +258,8 @@ function renderHist(){
     ${
       car.historique.map((e,i)=>`
       <div class="item">
-        <b>${e.type}</b> - ${e.km} km<br>
-        ${e.date}
-        <br>
+        <div class="item-title">${e.type}</div>
+        <div class="item-date">${e.date} • ${e.km} km</div>
         <button class="gray" onclick="viewDetail(${i})">Détail</button>
         <button class="danger" onclick="delH(${i})">X</button>
       </div>`).join("") || "Aucun historique"
@@ -248,9 +273,7 @@ function addCar(){
   const mo=prompt("Modèle");
   const p=prompt("Plaque");
   const km=parseInt(prompt("Km"));
-
   if(!m)return;
-
   cars.push({marque:m,modele:mo,plaque:p,km:km||0,entretiens:[],historique:[]});
   save();home();
 }
@@ -260,63 +283,46 @@ function addEntretien(){
   const type=document.getElementById("type").value;
   const date=document.getElementById("date").value;
   const note=document.getElementById("note").value;
-
-  if(!date) return alert("Date obligatoire");
-
+  if(!date)return alert("Date obligatoire");
   car.entretiens.push({type,date,note});
   save();showForm=false;render();
 }
 
-/* 🔥 VALIDATION AVEC DATE */
 function done(i){
   const car=cars[selectedCar];
   const e=car.entretiens[i];
+  const km=parseInt(prompt("Kilométrage ?"));
+  if(!km)return;
 
-  const km=parseInt(prompt("Kilométrage actuel ?"));
-  if(!km) return;
-
-  car.km = km;
-
-  car.historique.unshift({
-    ...e,
-    km
-  });
+  car.km=km;
+  car.historique.unshift({...e,km});
 
   if(e.type==="Révision"){
-    const nextDate = prompt("Date prochaine révision ? (AAAA-MM-JJ)");
+    const nextDate=prompt("Date prochaine révision ?");
     if(nextDate){
       car.entretiens.push({
         type:"Révision",
-        date: nextDate,
+        date:nextDate,
         note:"Programmé"
       });
     }
   }
 
   car.entretiens.splice(i,1);
-
   save();render();
 }
 
 function editE(i){
   const e=cars[selectedCar].entretiens[i];
-
-  e.type = prompt("Type", e.type) || e.type;
-  e.date = prompt("Date", e.date) || e.date;
-  e.note = prompt("Note", e.note) || e.note;
-
+  e.type=prompt("Type",e.type)||e.type;
+  e.date=prompt("Date",e.date)||e.date;
+  e.note=prompt("Note",e.note)||e.note;
   save();render();
 }
 
 function viewDetail(i){
   const e=cars[selectedCar].historique[i];
-
-  alert(
-    "Type: "+e.type+"\\n"+
-    "Date: "+e.date+"\\n"+
-    "Km: "+e.km+"\\n"+
-    "Note: "+(e.note||"")
-  );
+  alert(`Type: ${e.type}\nDate: ${e.date}\nKm: ${e.km}\nNote: ${e.note||""}`);
 }
 
 function delE(i){cars[selectedCar].entretiens.splice(i,1);save();render();}
