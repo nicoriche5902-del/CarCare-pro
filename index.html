@@ -6,31 +6,51 @@
 <title>CarCare Pro</title>
 
 <link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#22c55e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 
 <style>
-body {margin:0;font-family:-apple-system;background:#0b1220;color:white;}
-.header {text-align:center;padding:15px;background:#111827;font-weight:bold;}
-.container {padding:15px;}
+body { margin:0;font-family:-apple-system;background:#0b1220;color:white;}
+.header { text-align:center;padding:15px;background:#111827;}
+.container { padding:15px;}
 
-.car-card {background:#1f2937;padding:15px;border-radius:14px;margin-bottom:10px;}
-.panel {background:#111827;padding:15px;border-radius:14px;margin-bottom:10px;}
+.car-card {
+  background:#1f2937;
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:10px;
+}
 
-.tabs {display:flex;background:#1f2937;border-radius:10px;overflow:hidden;}
-.tab {flex:1;text-align:center;padding:10px;}
-.active {background:#22c55e;color:black;}
+.panel {
+  background:#111827;
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:10px;
+}
 
-.item {background:#1f2937;padding:10px;border-radius:10px;margin-top:8px;}
+.tabs { display:flex;background:#1f2937;border-radius:10px;overflow:hidden;}
+.tab { flex:1;text-align:center;padding:10px;}
+.active { background:#22c55e;color:black;}
 
-button {border:none;padding:8px;border-radius:8px;margin-top:5px;}
-button:active {transform:scale(0.95);}
-.primary {background:#22c55e;}
-.danger {background:#ef4444;}
-.gray {background:#334155;}
+.item {
+  background:#1f2937;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+}
 
-input, select {width:100%;padding:8px;margin-top:5px;border-radius:8px;border:none;}
+button { border:none;padding:8px;border-radius:8px;margin-top:5px; }
+.primary { background:#22c55e; }
+.danger { background:#ef4444; }
+.gray { background:#334155; }
+
+input, select {
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:8px;
+  border:none;
+}
 </style>
 </head>
 
@@ -42,40 +62,29 @@ input, select {width:100%;padding:8px;margin-top:5px;border-radius:8px;border:no
 <script>
 
 let cars = JSON.parse(localStorage.getItem("cars")) || [];
-let selectedCar=null;
-let tab="entretien";
-let showForm=false;
+let selectedCar = null;
+let tab = "entretien";
+let showForm = false;
 
-function save(){localStorage.setItem("cars",JSON.stringify(cars));}
-
-/* ALERTES */
-function checkAlerts(car){
-  let msg="";
-  car.entretiens.forEach(e=>{
-    if(e.type==="Révision" && e.kmNext){
-      if(car.km >= e.kmNext){
-        msg+="⚠️ Révision en retard\\n";
-      }else if(car.km >= e.kmNext-1000){
-        msg+="⏳ Révision bientôt\\n";
-      }
-    }
-  });
-  if(msg){setTimeout(()=>alert(msg),500);}
-}
+function save(){ localStorage.setItem("cars", JSON.stringify(cars)); }
 
 /* HOME */
 function home(){
   selectedCar=null;
   let html="";
+
   cars.forEach((c,i)=>{
     html+=`
-    <div class="car-card" onclick="openCar(${i})">
-      <b>${c.marque} ${c.modele}</b><br>
-      ${c.plaque}<br>
-      ${c.km} km
-    </div>`;
+      <div class="car-card" onclick="openCar(${i})">
+        <b>${c.marque} ${c.modele}</b><br>
+        ${c.plaque}<br>
+        ${c.km} km
+      </div>
+    `;
   });
+
   html+=`<button onclick="addCar()" style="position:fixed;bottom:20px;right:20px;width:65px;height:65px;border-radius:50%;background:#22c55e;font-size:30px;">+</button>`;
+
   app.innerHTML=html;
 }
 
@@ -84,7 +93,6 @@ function openCar(i){
   selectedCar=i;
   tab="entretien";
   showForm=false;
-  checkAlerts(cars[i]);
   render();
 }
 
@@ -97,6 +105,7 @@ function switchTab(t){
 /* RENDER */
 function render(){
   const car=cars[selectedCar];
+
   app.innerHTML=`
     <button class="gray" onclick="home()">⬅</button>
 
@@ -122,7 +131,7 @@ function renderEntretien(){
   if(showForm){
     return `
     <div class="panel">
-      <button class="gray" onclick="showForm=false;render()">⬅</button>
+      <button class="gray" onclick="closeForm()">⬅</button>
 
       <select id="type">
         <option>Révision</option>
@@ -131,7 +140,9 @@ function renderEntretien(){
         <option>Réparation</option>
       </select>
 
+      <label>Date réalisation</label>
       <input id="date" type="date">
+
       <input id="note" placeholder="Note">
 
       <button class="primary" onclick="addEntretien()">Ajouter</button>
@@ -146,18 +157,17 @@ function renderEntretien(){
           <b>${e.type}</b><br>
           📅 ${e.date}<br>
           ${e.note||""}
-          ${e.kmNext?`<br>🎯 Prochaine à ${e.kmNext} km`:``}
 
           <br>
           <button class="primary" onclick="done(${i})">✔</button>
           <button class="gray" onclick="editE(${i})">Modifier</button>
           <button class="danger" onclick="delE(${i})">X</button>
         </div>
-      `).join("") || "Aucun entretien"
+      `).join("") || "Aucun"
     }
   </div>
 
-  <button onclick="showForm=true;render()" style="position:fixed;bottom:20px;right:20px;width:65px;height:65px;border-radius:50%;background:#22c55e;font-size:30px;">+</button>
+  <button onclick="openForm()" style="position:fixed;bottom:20px;right:20px;width:65px;height:65px;border-radius:50%;background:#22c55e;font-size:30px;">+</button>
   `;
 }
 
@@ -177,7 +187,7 @@ function renderHist(){
           <button class="gray" onclick="viewDetail(${i})">Détail</button>
           <button class="danger" onclick="delH(${i})">X</button>
         </div>
-      `).join("") || "Aucun historique"
+      `).join("") || "Aucun"
     }
   </div>`;
 }
@@ -191,7 +201,7 @@ function addCar(){
 
   if(!m)return;
 
-  cars.push({marque:m,modele:mo,plaque:p,km:parseInt(km)||0,entretiens:[],historique:[]});
+  cars.push({marque:m,modele:mo,plaque:p,km,entretiens:[],historique:[]});
   save(); home();
 }
 
@@ -213,22 +223,17 @@ function done(i){
   const car=cars[selectedCar];
   const e=car.entretiens[i];
 
-  const km=parseInt(prompt("Kilométrage ?"));
-  if(!km) return;
+  const km=prompt("Kilométrage ?");
+  if(!km)return;
 
   car.km=km;
 
   car.historique.unshift({...e,km});
 
   if(e.type==="Révision"){
-    const nextKm=parseInt(prompt("Km prochaine révision ?"));
-    if(nextKm){
-      car.entretiens.push({
-        type:"Révision",
-        date:"",
-        note:"Programmé",
-        kmNext: nextKm
-      });
+    const next=prompt("Date prochaine révision");
+    if(next){
+      car.entretiens.push({type:"Révision",date:next,note:"Programmé"});
     }
   }
 
@@ -238,7 +243,8 @@ function done(i){
 }
 
 function editE(i){
-  const e=cars[selectedCar].entretiens[i];
+  const car=cars[selectedCar];
+  const e=car.entretiens[i];
 
   const type=prompt("Type", e.type);
   const date=prompt("Date", e.date);
@@ -255,9 +261,9 @@ function viewDetail(i){
   const e=cars[selectedCar].historique[i];
 
   alert(
-    "Type: "+e.type+"\\n"+
-    "Date: "+e.date+"\\n"+
-    "Km: "+e.km+"\\n"+
+    "Type: "+e.type+"\n"+
+    "Date: "+e.date+"\n"+
+    "Km: "+e.km+"\n"+
     "Note: "+(e.note||"")
   );
 }
@@ -272,8 +278,11 @@ function delH(i){
   save(); render();
 }
 
+function openForm(){ showForm=true; render(); }
+function closeForm(){ showForm=false; render(); }
+
 /* SERVICE WORKER */
-if("serviceWorker" in navigator){
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
 
