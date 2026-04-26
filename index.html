@@ -96,6 +96,37 @@ input,select {
   align-items:center;
   justify-content:center;
 }
+
+/* MODALE PREMIUM */
+.modal {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.hidden {display:none;}
+
+.modal-content {
+  background:linear-gradient(135deg,#1f2937,#020617);
+  padding:20px;
+  border-radius:20px;
+  width:85%;
+  max-width:320px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.7);
+  animation:pop 0.25s ease;
+}
+
+@keyframes pop {
+  from {transform:scale(0.8); opacity:0;}
+  to {transform:scale(1); opacity:1;}
+}
 </style>
 </head>
 
@@ -103,6 +134,15 @@ input,select {
 
 <div class="header">🚗 CarCare Pro</div>
 <div id="app"></div>
+
+<!-- MODALE -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <h3>📄 Détail entretien</h3>
+    <div id="modal-body"></div>
+    <button class="primary" onclick="closeModal()">Fermer</button>
+  </div>
+</div>
 
 <script>
 
@@ -133,9 +173,8 @@ function dashboard(car){
 
   const d=new Date(next.date);
   const today=new Date();
-  const total=30;
   const diff=(d-today)/(1000*60*60*24);
-  let percent=Math.max(0,Math.min(100,(diff/total)*100));
+  let percent=Math.max(0,Math.min(100,(diff/30)*100));
 
   return `
   <div class="panel fade">
@@ -248,9 +287,10 @@ function renderHist(){
     ${
       car.historique.map((e,i)=>`
       <div class="item">
-        ${e.type} - ${e.km} km<br>
+        <b>${e.type}</b> - ${e.km} km<br>
         ${e.date}
         <br>
+        <button class="gray" onclick="viewDetail(${i})">Détail</button>
         <button class="danger" onclick="delH(${i})">X</button>
       </div>
       `).join("") || "Aucun historique"
@@ -331,6 +371,24 @@ function delE(i){
 function delH(i){
   cars[selectedCar].historique.splice(i,1);
   save();render();
+}
+
+/* MODALE */
+function viewDetail(i){
+  const e = cars[selectedCar].historique[i];
+
+  document.getElementById("modal-body").innerHTML = `
+    <p><b>Type :</b> ${e.type}</p>
+    <p><b>Date :</b> ${e.date}</p>
+    <p><b>Kilométrage :</b> ${e.km} km</p>
+    <p><b>Note :</b> ${e.note || "Aucune"}</p>
+  `;
+
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function closeModal(){
+  document.getElementById("modal").classList.add("hidden");
 }
 
 /* SW */
