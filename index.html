@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CarCare Ultimate</title>
+<title>CarCare Pro</title>
 
 <link rel="manifest" href="manifest.json">
 
@@ -16,25 +16,34 @@ body {
 }
 
 /* ANIMATION */
-.fade {animation:fadeIn 0.3s ease;}
-@keyframes fadeIn {
-  from {opacity:0;transform:translateY(10px);}
-  to {opacity:1;transform:translateY(0);}
+.fade {animation:fade 0.3s ease;}
+@keyframes fade {
+  from {opacity:0; transform:translateY(10px);}
+  to {opacity:1; transform:translateY(0);}
 }
 
 /* HEADER */
-.header {text-align:center;padding:20px;font-size:22px;font-weight:700;}
+.header {
+  text-align:center;
+  padding:20px;
+  font-size:22px;
+  font-weight:700;
+}
 
 /* CARD */
 .car-card {
-  background:linear-gradient(135deg,#1f2937,#111827);
-  padding:18px;border-radius:20px;margin:10px;
+  background:#1f2937;
+  padding:15px;
+  border-radius:15px;
+  margin:10px;
 }
 
 /* PANEL */
 .panel {
-  background:rgba(17,24,39,0.8);
-  padding:15px;border-radius:20px;margin:10px;
+  background:#111827;
+  padding:15px;
+  border-radius:15px;
+  margin:10px;
 }
 
 /* TABS */
@@ -45,37 +54,54 @@ body {
 /* ITEM */
 .item {
   background:#1f2937;
-  padding:12px;
-  border-radius:14px;
+  padding:10px;
+  border-radius:10px;
   margin-top:8px;
 }
 
-/* BADGE */
-.badge-ok {color:#22c55e;}
-.badge-warn {color:orange;}
-.badge-danger {color:red;}
+/* STATUS */
+.ok {color:#22c55e;}
+.warn {color:orange;}
+.danger-txt {color:red;}
 
 /* BUTTON */
-button {border:none;padding:6px;border-radius:8px;margin-top:5px;}
+button {
+  border:none;
+  padding:6px;
+  border-radius:8px;
+  margin-top:5px;
+}
 .primary{background:#22c55e;}
 .danger{background:#ef4444;}
 .gray{background:#334155;}
 
-input,select{width:100%;padding:8px;margin-top:5px;border-radius:8px;}
+input,select {
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:8px;
+}
 
 /* FAB */
 .fab {
-  position:fixed;bottom:20px;right:20px;
-  width:65px;height:65px;border-radius:50%;
-  background:#22c55e;font-size:30px;
-  display:flex;align-items:center;justify-content:center;
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:#22c55e;
+  font-size:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🚗 CarCare Ultimate</div>
+<div class="header">🚗 CarCare Pro</div>
 <div id="app"></div>
 
 <script>
@@ -85,18 +111,18 @@ let selectedCar=null;
 let tab="entretien";
 let showForm=false;
 
-function save(){localStorage.setItem("cars",JSON.stringify(cars));}
+function save(){localStorage.setItem("cars", JSON.stringify(cars));}
 
-/* STATUS DATE */
+/* STATUS */
 function getStatus(date){
   if(!date) return "";
   const d=new Date(date);
   const today=new Date();
   const diff=(d-today)/(1000*60*60*24);
 
-  if(diff<0) return "<span class='badge-danger'>En retard</span>";
-  if(diff<7) return "<span class='badge-warn'>Bientôt</span>";
-  return "<span class='badge-ok'>OK</span>";
+  if(diff<0) return "<span class='danger-txt'>🔴 En retard</span>";
+  if(diff<7) return "<span class='warn'>🟠 Bientôt</span>";
+  return "<span class='ok'>🟢 OK</span>";
 }
 
 /* DASHBOARD */
@@ -109,12 +135,12 @@ function dashboard(car){
   const today=new Date();
   const total=30;
   const diff=(d-today)/(1000*60*60*24);
-
   let percent=Math.max(0,Math.min(100,(diff/total)*100));
 
   return `
   <div class="panel fade">
-    Prochaine révision : ${next.date}<br>
+    📅 Prochaine révision : ${next.date}<br>
+    ${getStatus(next.date)}
     <div style="background:#020617;border-radius:10px;margin-top:8px;">
       <div style="width:${percent}%;height:8px;background:#22c55e;border-radius:10px;"></div>
     </div>
@@ -145,18 +171,24 @@ function openCar(i){
   render();
 }
 
+function switchTab(t){
+  tab=t;
+  showForm=false;
+  render();
+}
+
 /* RENDER */
 function render(){
   const car=cars[selectedCar];
 
   app.innerHTML=`
-  <button onclick="home()">⬅</button>
+  <button class="gray" onclick="home()">⬅</button>
 
   ${dashboard(car)}
 
   <div class="tabs">
-    <div class="tab ${tab==="entretien"?"active":""}" onclick="tab='entretien';render()">Entretien</div>
-    <div class="tab ${tab==="historique"?"active":""}" onclick="tab='historique';render()">Historique</div>
+    <div class="tab ${tab==="entretien"?"active":""}" onclick="switchTab('entretien')">Entretien</div>
+    <div class="tab ${tab==="historique"?"active":""}" onclick="switchTab('historique')">Historique</div>
   </div>
 
   ${tab==="entretien"?renderEntretien():renderHist()}
@@ -170,15 +202,19 @@ function renderEntretien(){
   if(showForm){
     return `
     <div class="panel fade">
+      <button onclick="showForm=false;render()">⬅</button>
+
       <select id="type">
         <option>Révision</option>
         <option>Freins</option>
         <option>Distribution</option>
         <option>Réparation</option>
       </select>
+
       <input id="date" type="date">
       <input id="note" placeholder="Note">
-      <button onclick="addEntretien()">Ajouter</button>
+
+      <button class="primary" onclick="addEntretien()">Ajouter</button>
     </div>`;
   }
 
@@ -188,11 +224,14 @@ function renderEntretien(){
       car.entretiens.map((e,i)=>`
       <div class="item">
         <b>${e.type}</b> ${getStatus(e.date)}<br>
-        ${e.date}<br>
-        <button onclick="done(${i})">✔</button>
+        ${e.date || ""}<br>
+        ${e.note || ""}
+        <br>
+        <button class="primary" onclick="done(${i})">✔</button>
         <button onclick="editE(${i})">✏️</button>
-        <button onclick="delE(${i})">X</button>
-      </div>`).join("")
+        <button class="danger" onclick="delE(${i})">X</button>
+      </div>
+      `).join("") || "Aucun entretien"
     }
   </div>
 
@@ -200,9 +239,10 @@ function renderEntretien(){
   `;
 }
 
-/* HIST */
+/* HISTORIQUE */
 function renderHist(){
   const car=cars[selectedCar];
+
   return `
   <div class="panel fade">
     ${
@@ -210,7 +250,10 @@ function renderHist(){
       <div class="item">
         ${e.type} - ${e.km} km<br>
         ${e.date}
-      </div>`).join("")
+        <br>
+        <button class="danger" onclick="delH(${i})">X</button>
+      </div>
+      `).join("") || "Aucun historique"
     }
   </div>`;
 }
@@ -218,21 +261,25 @@ function renderHist(){
 /* ACTIONS */
 function addCar(){
   const m=prompt("Marque");
-  if(!m)return;
+  if(!m) return;
   const mo=prompt("Modèle");
   const p=prompt("Plaque");
   const km=parseInt(prompt("Km"))||0;
+
   cars.push({marque:m,modele:mo,plaque:p,km,entretiens:[],historique:[]});
   save();home();
 }
 
 function addEntretien(){
   const car=cars[selectedCar];
-  car.entretiens.push({
-    type:type.value,
-    date:date.value,
-    note:note.value
-  });
+
+  const type=document.getElementById("type").value;
+  const date=document.getElementById("date").value;
+  const note=document.getElementById("note").value;
+
+  if(!date) return alert("Date obligatoire");
+
+  car.entretiens.push({type,date,note});
   save();showForm=false;render();
 }
 
@@ -240,31 +287,49 @@ function done(i){
   const car=cars[selectedCar];
   const e=car.entretiens[i];
 
-  const km=parseInt(prompt("Km actuel ?"));
-  if(!km)return;
+  const km=parseInt(prompt("Kilométrage ?"));
+  if(!km) return;
 
   car.km=km;
   car.historique.unshift({...e,km});
 
   if(e.type==="Révision"){
-    const d=prompt("Prochaine date ?");
-    if(d){
-      car.entretiens.push({type:"Révision",date:d});
+    const nextDate=prompt("Date prochaine révision ?");
+    if(nextDate){
+      car.entretiens.push({
+        type:"Révision",
+        date:nextDate,
+        note:"Programmé"
+      });
     }
   }
 
   car.entretiens.splice(i,1);
+
   save();render();
 }
 
 function editE(i){
-  let e=cars[selectedCar].entretiens[i];
-  e.date=prompt("Date",e.date)||e.date;
+  const e=cars[selectedCar].entretiens[i];
+
+  const type=prompt("Type",e.type);
+  const date=prompt("Date",e.date);
+  const note=prompt("Note",e.note);
+
+  if(type) e.type=type;
+  if(date) e.date=date;
+  if(note!==null) e.note=note;
+
   save();render();
 }
 
 function delE(i){
   cars[selectedCar].entretiens.splice(i,1);
+  save();render();
+}
+
+function delH(i){
+  cars[selectedCar].historique.splice(i,1);
   save();render();
 }
 
